@@ -30,7 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título principal
-st.title("🎛️ Dashboard de Optimización de Recursos para 2027")
+st.title("🎛️ Dashboard de Optimización de Recursos para 2027 Para el Partido del Trabajo - PT")
 st.subheader("Automatización, Eficiencia y Detección de Anomalías")
 st.markdown("""
 **Objetivo:** Reducir pérdidas, detectar desviaciones en los fondos y optimizar los recursos financieros y de inventarios.  
