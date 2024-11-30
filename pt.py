@@ -139,10 +139,10 @@ else:
             )
             st.plotly_chart(fig_pred, use_container_width=True)
 
-# --- Pestaña 5: Minería de Procesos ---
-with tabs[4]:
-    st.header("🌐 Minería de Procesos")
-    st.markdown("""
+    # --- Pestaña 5: Minería de Procesos ---
+    with tabs[4]:
+        st.header("🌐 Minería de Procesos")
+        st.markdown("""
     **Minería de procesos aplicada al contexto político:**
     La minería de procesos permite analizar cómo se llevan a cabo las actividades dentro de las operaciones de un partido político. 
     Es especialmente útil para identificar cuellos de botella, gastos innecesarios y rutas de optimización en procesos logísticos como la entrega de propaganda, organización de mítines y distribución de recursos.
@@ -167,7 +167,7 @@ with tabs[4]:
     **Visualización de procesos:**
     Abajo se muestra un ejemplo de cómo podría lucir un flujo de actividades en un partido político:
     """)
-    
+
     # Mostrar diagrama representativo de minería de procesos
     st.image(
         "https://miro.medium.com/max/1400/1*X47Jl9zwmDRQz-Z1knG0gg.png",
@@ -182,10 +182,9 @@ with tabs[4]:
     - **Optimización:** Ajustar procesos logísticos para maximizar el impacto electoral.
     """)
 
-# --- Pestaña 6: Explicación de Modelos de Machine Learning ---
-with tabs[5]:
-    st.header("🤖 Modelos de Machine Learning: Explicación")
-    st.markdown("""
+    # --- Pestaña 6: Explicación de Modelos de Machine Learning ---
+    with tabs[5]:
+        st.header("""
     **Modelos aplicados al contexto político:**
 
     **1. Isolation Forest (Bosque de Aislamiento):**  
@@ -234,3 +233,4 @@ with tabs[5]:
     - **Optimización:** Asignación eficiente de recursos a zonas prioritarias.  
     - **Impacto electoral:** Identificación de regiones clave para maximizar alcance con recursos limitados.
     """)
+        
