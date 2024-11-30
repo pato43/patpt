@@ -194,9 +194,9 @@ else:
       - Aísla puntos de datos generando particiones aleatorias en los conjuntos de datos.  
       - La métrica principal es la **profundidad del árbol**: los gastos más fáciles de aislar (menor profundidad) son considerados anómalos.
       - Fórmula del puntaje de anomalía:  
-        \\[
+        $$
         s(x) = 2^{-E(h(x)) / c(n)}
-        \\]  
+        $$  
         donde \\(E(h(x))\\) es la profundidad promedio, y \\(c(n)\\) es el número esperado de divisiones para un conjunto de tamaño \\(n\\).
     - **Empresas y casos relevantes:**  
       - **PayPal:** Monitoreo de fraudes financieros.  
