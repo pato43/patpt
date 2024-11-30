@@ -197,7 +197,7 @@ else:
         $$
         s(x) = 2^{-E(h(x)) / c(n)}
         $$  
-        donde $$(E(h(x))$$) es la profundidad promedio, y $$(c(n)$$) es el número esperado de divisiones para un conjunto de tamaño \\(n\\).
+        donde $$(E(h(x))$$ es la profundidad promedio, y $$(c(n)$$ es el número esperado de divisiones para un conjunto de tamaño \\(n\\).
     - **Empresas y casos relevantes:**  
       - **PayPal:** Monitoreo de fraudes financieros.  
       - **INE México:** Potencial uso para detectar irregularidades en campañas.
@@ -212,7 +212,7 @@ else:
         $$
         J = \\sum_{i=1}^{k} \\sum_{j=1}^{n} ||x_j - \\mu_i||^2
         $$ 
-        donde $$($$mu_i$$) es el centroide del clúster.
+        donde $$(mu_i)$$ es el centroide del clúster.
     - **Caso de éxito:**  
       - **India:** Utilizó KMeans para segmentar los gastos de campaña según las necesidades demográficas, logrando reducir un 25% los costos operativos al identificar regiones de baja prioridad.
 
@@ -221,10 +221,10 @@ else:
     - **Ejemplo:** Estimación del gasto necesario en regiones específicas para aumentar el alcance de votantes.  
     - **Base matemática:**  
       - Modelo lineal:  
-        \\[
+        $$
         y = \\beta_0 + \\beta_1x_1 + \\dots + \\beta_px_p + \\epsilon
-        \\]  
-        donde \\(\\beta_i\\) son los coeficientes del modelo y \\(\\epsilon\\) es el error.
+        $$  
+        donde $$(beta_i)$$ son los coeficientes del modelo y $$(epsilon$$) es el error.
     - **Caso de éxito:**  
       - **Canadá:** Predijo los costos asociados con campañas publicitarias en medios digitales, logrando ajustar presupuestos en tiempo real y reducir desperdicios en un 12%.
 
