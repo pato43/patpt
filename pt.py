@@ -197,7 +197,7 @@ else:
         $$
         s(x) = 2^{-E(h(x)) / c(n)}
         $$  
-        donde \\(E(h(x))\\) es la profundidad promedio, y \\(c(n)\\) es el número esperado de divisiones para un conjunto de tamaño \\(n\\).
+        donde $$(E(h(x))$$) es la profundidad promedio, y $$(c(n)$$) es el número esperado de divisiones para un conjunto de tamaño \\(n\\).
     - **Empresas y casos relevantes:**  
       - **PayPal:** Monitoreo de fraudes financieros.  
       - **INE México:** Potencial uso para detectar irregularidades en campañas.
@@ -209,10 +209,10 @@ else:
     - **Ejemplo:** Segmentación de zonas con mayor impacto político basado en inversión en propaganda y resultados históricos.  
     - **Base matemática:**  
       - Minimiza la suma de las distancias al centro del clúster:  
-        \\[
+        $$
         J = \\sum_{i=1}^{k} \\sum_{j=1}^{n} ||x_j - \\mu_i||^2
-        \\]  
-        donde \\(\\mu_i\\) es el centroide del clúster.
+        $$ 
+        donde $$($$mu_i$$) es el centroide del clúster.
     - **Caso de éxito:**  
       - **India:** Utilizó KMeans para segmentar los gastos de campaña según las necesidades demográficas, logrando reducir un 25% los costos operativos al identificar regiones de baja prioridad.
 
