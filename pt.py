@@ -64,10 +64,10 @@ def load_data():
         "Limpieza", "Propaganda", "Capacitación"
     ]
     data = {
-        "Categoría": np.random.choice(categories, 500),
-        "Mes": np.random.choice(range(1, 13), 500),
-        "Gasto ($)": np.random.randint(5000, 60000, 500),
-        "Año": np.random.choice([2022, 2023, 2024], 500),
+        "Categoría": np.random.choice(categories, 300),  # Datos iniciales reducidos para pruebas
+        "Mes": np.random.choice(range(1, 13), 300),
+        "Gasto ($)": np.random.randint(5000, 60000, 300),
+        "Año": np.random.choice([2022, 2023, 2024], 300),
     }
     return pd.DataFrame(data)
 
@@ -91,10 +91,7 @@ else:
         "📊 Análisis General", 
         "🔎 Transacciones Sospechosas (Isolation Forest)", 
         "📦 Clustering de Inventarios (K-Means)", 
-        "📚 Predicciones de Gasto (Regresión Lineal)", 
-        "🌟 XGBoost para Clasificación", 
-        "🌐 PCA para Reducción de Dimensiones", 
-        "🌳 Random Forest para Predicción"
+        "📚 Predicciones de Gasto (Regresión Lineal)"
     ])
 
     # --- Pestaña 1: Análisis General ---
@@ -121,7 +118,6 @@ else:
     with tabs[1]:
         st.header("🔎 Transacciones Sospechosas (Isolation Forest)")
         iforest = IsolationForest(contamination=0.05, random_state=42)
-        
         if not data_filtrada[["Gasto ($)"]].empty:
             data_filtrada.loc[:, "Anomalía"] = iforest.fit_predict(data_filtrada[["Gasto ($)"]])
             anomalías = data_filtrada[data_filtrada["Anomalía"] == -1]
@@ -166,46 +162,3 @@ else:
             st.plotly_chart(fig5, use_container_width=True)
         else:
             st.warning("No hay datos suficientes para entrenar el modelo de regresión lineal.")
-
-    # --- Pestaña 5: XGBoost para Clasificación ---
-    with tabs[4]:
-        st.header("🌟 XGBoost para Clasificación")
-        if not data_filtrada[["Mes", "Gasto ($)"]].empty:
-            X_train, X_test, y_train, y_test = train_test_split(
-                data_filtrada[["Mes", "Gasto ($)"]], 
-                data_filtrada["Categoría"], 
-                test_size=0.3, random_state=42
-            )
-            xgb = XGBClassifier()
-            xgb.fit(X_train, y_train)
-            y_pred = xgb.predict(X_test)
-            accuracy = accuracy_score(y_test, y_pred)
-            st.write(f"Precisión del modelo XGBoost: {accuracy:.2f}")
-        else:
-            st.warning("No hay datos suficientes para entrenar el modelo XGBoost.")
-
-    # --- Pestaña 6: PCA ---
-    with tabs[5]:
-        st.header("🌐 Análisis de Componentes Principales (PCA)")
-        pca = PCA(n_components=2)
-        if not data_filtrada[["Mes", "Gasto ($)"]].empty:
-            pca_data = pca.fit_transform(data_filtrada[["Mes", "Gasto ($)"]])
-            fig6 = px.scatter(
-                x=pca_data[:, 0], y=pca_data[:, 1], color=data_filtrada["Categoría"],
-                title="Reducción de Dimensiones con PCA"
-            )
-            st.plotly_chart(fig6, use_container_width=True)
-        else:
-            st.warning("No hay datos suficientes para ejecutar el PCA.")
-
-    # --- Pestaña 7: Random Forest ---
-    with tabs[6]:
-        st.header("🌳 Random Forest para Predicción")
-        rf = RandomForestRegressor(n_estimators=100, random_state=42)
-        if not X.empty:
-            rf.fit(X, y)
-            y_pred_rf = rf.predict(X)
-            mse = mean_squared_error(y, y_pred_rf)
-            st.write(f"Error cuadrático medio (MSE): {mse:.2f}")
-        else:
-            st.warning("No hay datos suficientes para entrenar el modelo Random Forest.")
