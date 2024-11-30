@@ -3,132 +3,209 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from sklearn.ensemble import IsolationForest, RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from prophet import Prophet
-from sklearn.metrics import mean_squared_error
+from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, mean_squared_error
 
 # Configuración inicial
-st.set_page_config(page_title="Control de Recursos - PT", layout="wide")
+st.set_page_config(
+    page_title="Demo de Dashboard para Optimización de Recursos",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Título principal del dashboard
-st.title("📊 Dashboard de Control de Recursos - Partido del Trabajo (PT)")
+# Tema de colores
 st.markdown("""
-**Bienvenidos al sistema de control de recursos del PT.**  
-Este dashboard permite analizar flujos de costos, identificar anomalías y optimizar la distribución de los recursos con modelos avanzados de Machine Learning.  
-- **Objetivo:** Preparar una estructura financiera sólida para la campaña electoral 2027.  
-- **Capacidades principales:**
-    - Detección de anomalías en gastos.
-    - Predicción de flujos de recursos.
-    - Clustering y segmentación de gastos.
-    - Minería de procesos.
+<style>
+    .css-18e3th9 { background-color: #1E1E1E; }
+    .block-container { padding: 1.5rem 2rem; }
+    h1, h2, h3 { color: #E0E0E0; }
+    .stTabs [data-baseweb="tab"] { 
+        background-color: #333333;
+        color: #E0E0E0;
+        border: 1px solid #444444;
+        border-radius: 5px;
+    }
+    .stTabs [data-baseweb="tab"]:hover { 
+        background-color: #444444;
+    }
+    .stTabs [data-baseweb="tab"][aria-selected="true"] { 
+        background-color: #205375;
+        color: #FFFFFF;
+        font-weight: bold;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Título principal
+st.title("🎛️ Demo de Dashboard para Optimización de Recursos")
+st.subheader("Automatización y Eficiencia Financiera para Competitividad Electoral 2027")
+st.markdown("""
+**Objetivo:** Este dashboard permite detectar anomalías, predecir tendencias y optimizar recursos. Diseñado para reducir fugas de dinero, identificar patrones financieros y maximizar el impacto de los recursos en campañas electorales.
 """)
 
-# Función para generar datos simulados
+# Propuesta de valor
+st.markdown("""
+### 💰 Ganancias Potenciales al Implementar Este Sistema
+1. **Reducción de Pérdidas:** Con una detección oportuna de fugas de dinero, las instituciones pueden ahorrar entre un 15% y 30% de su presupuesto anual.
+2. **Mayor Transparencia:** La automatización y visualización transparente aumentan la confianza de los votantes.
+3. **Eficiencia Comercial:** Este sistema puede comercializarse a partidos políticos, ONGs e instituciones gubernamentales a un costo estimado de $50,000 a $100,000 USD por implementación, generando ingresos recurrentes por mantenimiento.
+""")
+
+# Carga de datos simulados
 @st.cache_data
-def generar_datos():
+def load_data():
     np.random.seed(42)
-    categorias = ["Salarios", "Propaganda", "Capacitación", "Logística", "Publicidad Digital"]
-    meses = np.arange(1, 13)
-    data = pd.DataFrame({
-        "Categoría": np.random.choice(categorias, 500),
-        "Mes": np.random.choice(meses, 500),
-        "Gasto ($)": np.abs(np.random.normal(30000, 15000, 500)),
+    categories = [
+        "Salarios", "Administración", "Gastos Médicos", 
+        "Limpieza", "Propaganda", "Capacitación"
+    ]
+    data = {
+        "Categoría": np.random.choice(categories, 500),
+        "Mes": np.random.choice(range(1, 13), 500),
+        "Gasto ($)": np.random.randint(5000, 60000, 500),
         "Año": np.random.choice([2022, 2023, 2024], 500),
-    })
-    return data
+    }
+    return pd.DataFrame(data)
 
-# Carga de datos
-data = generar_datos()
+data = load_data()
 
-# Barra lateral para filtros
-st.sidebar.title("Filtros")
-categorias_filtradas = st.sidebar.multiselect("Selecciona categorías", data["Categoría"].unique(), default=data["Categoría"].unique())
-anios_filtrados = st.sidebar.multiselect("Selecciona años", data["Año"].unique(), default=data["Año"].unique())
+# Barra lateral
+with st.sidebar:
+    st.header("Opciones de Filtro")
+    filtro_categoria = st.multiselect("Seleccionar Categorías", data["Categoría"].unique(), default=data["Categoría"].unique())
+    filtro_año = st.multiselect("Seleccionar Años", data["Año"].unique(), default=data["Año"].unique())
 
-# Filtrar datos según la selección del usuario
-data_filtrada = data[(data["Categoría"].isin(categorias_filtradas)) & (data["Año"].isin(anios_filtrados))]
+# Filtrar datos
+data_filtrada = data[data["Categoría"].isin(filtro_categoria) & data["Año"].isin(filtro_año)]
 
 # Verificar si hay datos filtrados
 if data_filtrada.empty:
-    st.warning("No hay datos disponibles con los filtros seleccionados.")
+    st.warning("No hay datos disponibles para los filtros seleccionados.")
 else:
     # Pestañas principales
-    tabs = st.tabs(["📊 Análisis General", "🔎 Detección de Anomalías", "📦 Clustering", "📚 Predicciones Temporales", "🌐 PCA y Segmentación"])
+    tabs = st.tabs([
+        "📊 Análisis General", 
+        "🔎 Transacciones Sospechosas (Isolation Forest)", 
+        "📦 Clustering de Inventarios (K-Means)", 
+        "📚 Predicciones de Gasto (Regresión Lineal)", 
+        "🌟 XGBoost para Clasificación", 
+        "🌐 PCA para Reducción de Dimensiones", 
+        "🌳 Random Forest para Predicción"
+    ])
 
-    # --- Pestaña: Análisis General ---
+    # --- Pestaña 1: Análisis General ---
     with tabs[0]:
-        st.header("📊 Análisis General")
+        st.header("📊 Análisis General de Recursos")
         col1, col2 = st.columns(2)
-
-        # Gráfico 1: Gasto total por categoría
-        gasto_categoria = data_filtrada.groupby("Categoría")["Gasto ($)"].sum().reset_index()
-        fig1 = px.bar(gasto_categoria, x="Categoría", y="Gasto ($)", title="Gasto Total por Categoría", text_auto='.2s')
+        
+        # Gráfico de gasto por categoría
+        fig1 = px.bar(
+            data_filtrada.groupby("Categoría")["Gasto ($)"].sum().reset_index(),
+            x="Categoría", y="Gasto ($)", color="Categoría",
+            title="Gasto Total por Categoría"
+        )
         col1.plotly_chart(fig1, use_container_width=True)
-
-        # Gráfico 2: Gasto mensual promedio
-        gasto_mes = data_filtrada.groupby("Mes")["Gasto ($)"].mean().reset_index()
-        fig2 = px.line(gasto_mes, x="Mes", y="Gasto ($)", title="Promedio de Gasto Mensual", markers=True)
+        
+        # Gráfico de gasto mensual
+        fig2 = px.line(
+            data_filtrada.groupby("Mes")["Gasto ($)"].sum().reset_index(),
+            x="Mes", y="Gasto ($)", title="Gasto Mensual"
+        )
         col2.plotly_chart(fig2, use_container_width=True)
 
-    # --- Pestaña: Detección de Anomalías ---
+    # --- Pestaña 2: Transacciones Sospechosas ---
     with tabs[1]:
-        st.header("🔎 Detección de Anomalías con Isolation Forest")
-        st.markdown("""
-        Este modelo utiliza técnicas no supervisadas para detectar transacciones inusuales que podrían indicar desviaciones o errores en la gestión.
-        """)
-
-        # Modelo de Isolation Forest
+        st.header("🔎 Transacciones Sospechosas (Isolation Forest)")
         iforest = IsolationForest(contamination=0.05, random_state=42)
-        data_filtrada["Anomalía"] = iforest.fit_predict(data_filtrada[["Gasto ($)"]])
-        anomalías = data_filtrada[data_filtrada["Anomalía"] == -1]
-
-        if not anomalías.empty:
-            fig3 = px.scatter(anomalías, x="Mes", y="Gasto ($)", color="Categoría", title="Anomalías Detectadas")
+        
+        if not data_filtrada[["Gasto ($)"]].empty:
+            data_filtrada.loc[:, "Anomalía"] = iforest.fit_predict(data_filtrada[["Gasto ($)"]])
+            anomalías = data_filtrada[data_filtrada["Anomalía"] == -1]
+            st.write("Transacciones sospechosas detectadas:", anomalías)
+            fig3 = px.scatter(
+                anomalías, x="Mes", y="Gasto ($)", color="Categoría",
+                title="Transacciones Sospechosas Detectadas"
+            )
             st.plotly_chart(fig3, use_container_width=True)
         else:
-            st.success("No se detectaron anomalías en los datos seleccionados.")
+            st.warning("No hay datos suficientes para ejecutar el modelo de IsolationForest.")
 
-    # --- Pestaña: Clustering ---
+    # --- Pestaña 3: Clustering de Inventarios ---
     with tabs[2]:
-        st.header("📦 Clustering de Gastos")
-        st.markdown("""
-        **K-Means** agrupa los datos en clusters según patrones de gasto. Esto ayuda a entender cómo se distribuyen los recursos.
-        """)
-
+        st.header("📦 Clustering de Inventarios (K-Means)")
         kmeans = KMeans(n_clusters=3, random_state=42)
-        data_filtrada["Cluster"] = kmeans.fit_predict(data_filtrada[["Gasto ($)"]])
+        if not data_filtrada[["Gasto ($)"]].empty:
+            data_filtrada.loc[:, "Cluster"] = kmeans.fit_predict(data_filtrada[["Gasto ($)"]])
+            fig4 = px.scatter(
+                data_filtrada, x="Mes", y="Gasto ($)", color="Cluster",
+                title="Clustering de Gasto por Inventarios"
+            )
+            st.plotly_chart(fig4, use_container_width=True)
+        else:
+            st.warning("No hay datos suficientes para ejecutar el modelo K-Means.")
 
-        fig4 = px.scatter(data_filtrada, x="Mes", y="Gasto ($)", color="Cluster", title="Clustering de Gasto", hover_data=["Categoría"])
-        st.plotly_chart(fig4, use_container_width=True)
-
-    # --- Pestaña: Predicciones Temporales ---
+    # --- Pestaña 4: Predicciones de Gasto ---
     with tabs[3]:
-        st.header("📚 Predicciones de Gasto")
-        st.markdown("""
-        Usando **Prophet**, predecimos los patrones de gasto futuros para una mejor planificación de los recursos.
-        """)
+        st.header("📚 Predicciones de Gasto (Regresión Lineal)")
+        lr = LinearRegression()
+        X = data_filtrada[["Mes"]]
+        y = data_filtrada["Gasto ($)"]
+        if not X.empty:
+            lr.fit(X, y)
+            predicciones = lr.predict(X)
+            data_filtrada.loc[:, "Predicción ($)"] = predicciones
+            
+            fig5 = px.line(
+                data_filtrada, x="Mes", y="Predicción ($)", color="Categoría",
+                title="Predicciones de Gasto con Regresión Lineal"
+            )
+            st.plotly_chart(fig5, use_container_width=True)
+        else:
+            st.warning("No hay datos suficientes para entrenar el modelo de regresión lineal.")
 
-        df_prophet = data_filtrada.groupby("Mes")["Gasto ($)"].sum().reset_index()
-        df_prophet.columns = ["ds", "y"]
-
-        model = Prophet()
-        model.fit(df_prophet)
-        future = model.make_future_dataframe(periods=12, freq="M")
-        forecast = model.predict(future)
-
-        fig5 = px.line(forecast, x="ds", y=["yhat", "yhat_lower", "yhat_upper"], title="Predicción de Gasto Mensual")
-        st.plotly_chart(fig5, use_container_width=True)
-
-    # --- Pestaña: PCA y Segmentación ---
+    # --- Pestaña 5: XGBoost para Clasificación ---
     with tabs[4]:
-        st.header("🌐 Análisis PCA")
-        st.markdown("""
-        Utilizamos **PCA (Análisis de Componentes Principales)** para reducir la dimensionalidad y facilitar la visualización de los datos.
-        """)
+        st.header("🌟 XGBoost para Clasificación")
+        if not data_filtrada[["Mes", "Gasto ($)"]].empty:
+            X_train, X_test, y_train, y_test = train_test_split(
+                data_filtrada[["Mes", "Gasto ($)"]], 
+                data_filtrada["Categoría"], 
+                test_size=0.3, random_state=42
+            )
+            xgb = XGBClassifier()
+            xgb.fit(X_train, y_train)
+            y_pred = xgb.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            st.write(f"Precisión del modelo XGBoost: {accuracy:.2f}")
+        else:
+            st.warning("No hay datos suficientes para entrenar el modelo XGBoost.")
 
+    # --- Pestaña 6: PCA ---
+    with tabs[5]:
+        st.header("🌐 Análisis de Componentes Principales (PCA)")
         pca = PCA(n_components=2)
-        componentes = pca.fit_transform(data_filtrada[["Mes", "Gasto ($)"]])
+        if not data_filtrada[["Mes", "Gasto ($)"]].empty:
+            pca_data = pca.fit_transform(data_filtrada[["Mes", "Gasto ($)"]])
+            fig6 = px.scatter(
+                x=pca_data[:, 0], y=pca_data[:, 1], color=data_filtrada["Categoría"],
+                title="Reducción de Dimensiones con PCA"
+            )
+            st.plotly_chart(fig6, use_container_width=True)
+        else:
+            st.warning("No hay datos suficientes para ejecutar el PCA.")
 
-        fig6 = px.scatter(x=componentes[:, 0], y=componentes[:, 1], color=data_filtrada["Categoría"], title="Reducción de Dimensiones con PCA")
-        st.plotly_chart(fig6, use_container_width=True)
+    # --- Pestaña 7: Random Forest ---
+    with tabs[6]:
+        st.header("🌳 Random Forest para Predicción")
+        rf = RandomForestRegressor(n_estimators=100, random_state=42)
+        if not X.empty:
+            rf.fit(X, y)
+            y_pred_rf = rf.predict(X)
+            mse = mean_squared_error(y, y_pred_rf)
+            st.write(f"Error cuadrático medio (MSE): {mse:.2f}")
+        else:
+            st.warning("No hay datos suficientes para entrenar el modelo Random Forest.")
