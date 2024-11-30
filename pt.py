@@ -2,11 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from sklearn.ensemble import IsolationForest, RandomForestRegressor
+import plotly.graph_objects as go
+from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_classification
+from sklearn.metrics import mean_squared_error
 
 # Configuración inicial
 st.set_page_config(
@@ -19,72 +21,60 @@ st.set_page_config(
 st.markdown("""
 <style>
     .block-container { padding: 1.5rem 2rem; }
-    h1, h2, h3 { color: #205375; }
+    h1, h2, h3 { color: #205375; font-weight: bold; }
     .stButton>button { background-color: #205375; color: white; border-radius: 5px; }
     .stButton>button:hover { background-color: #1E90FF; }
+    .css-18e3th9 { background-color: #F4F4F4; }
+    .css-1d391kg { color: #333333; }
 </style>
 """, unsafe_allow_html=True)
 
 # Título principal
-st.title("🎛️ Demo de Dashboard para Optimización de Recursos")
-st.subheader("Automatización y Eficiencia Financiera para Competitividad Electoral 2027")
+st.title("🎛️ Dashboard de Optimización de Recursos para 2027")
+st.subheader("Automatización, Eficiencia y Detección de Anomalías")
 st.markdown("""
-**Objetivo:** Este dashboard permite detectar anomalías, predecir tendencias y optimizar recursos. Diseñado para reducir fugas de dinero, identificar patrones financieros y maximizar el impacto de los recursos en campañas electorales.
+**Objetivo:** Reducir pérdidas, detectar desviaciones en los fondos y optimizar los recursos financieros y de inventarios.  
+Esta herramienta está diseñada para maximizar el impacto de los recursos en campañas electorales y mejorar la transparencia.
 """)
 
-# Casos exitosos
-st.markdown("""
-### 🌍 Casos Exitosos en Otros Países
-- **Brasil:** Uso de Machine Learning para monitorear gastos públicos, logrando un ahorro anual de $150 millones de dólares mediante la detección de corrupción en contratos gubernamentales.
-- **India:** Implementación de dashboards de gasto público, reduciendo en un 35% los tiempos de procesamiento presupuestario y mejorando la transparencia.
-- **Canadá:** Aplicación de herramientas analíticas para predecir desviaciones en proyectos de infraestructura, evitando pérdidas superiores a $50 millones de dólares.
-""")
-
-# Propuesta de valor
-st.markdown("""
-### 💰 Ganancias Potenciales al Implementar Este Sistema
-1. **Reducción de Pérdidas:** Con una detección oportuna de fugas de dinero, las instituciones pueden ahorrar entre un 15% y 30% de su presupuesto anual.
-2. **Mayor Transparencia:** La automatización y visualización transparente aumentan la confianza de los votantes.
-3. **Eficiencia Comercial:** Este sistema puede comercializarse a partidos políticos, ONGs e instituciones gubernamentales a un costo estimado de $50,000 a $100,000 USD por implementación, generando ingresos recurrentes por mantenimiento.
-""")
-
-# Carga de datos simulados
+# Carga de datos simulados con opciones interactivas
 @st.cache_data
-def load_data():
+def load_data(custom_size):
     np.random.seed(42)
     categories = [
         "Salarios", "Administración", "Gastos Médicos", 
         "Limpieza", "Propaganda", "Capacitación"
     ]
     data = {
-        "Categoría": np.random.choice(categories, 500),
-        "Mes": np.random.choice(range(1, 13), 500),
-        "Gasto ($)": np.random.randint(5000, 60000, 500),
-        "Año": np.random.choice([2022, 2023, 2024], 500),
+        "Categoría": np.random.choice(categories, custom_size),
+        "Mes": np.random.choice(range(1, 13), custom_size),
+        "Gasto ($)": np.random.randint(5000, 60000, custom_size),
+        "Año": np.random.choice([2022, 2023, 2024], custom_size),
     }
     return pd.DataFrame(data)
 
-data = load_data()
-
-# Barra lateral
+# Elementos interactivos: Slider para el tamaño de los datos
 with st.sidebar:
-    st.header("Opciones de Filtro")
-    filtro_categoria = st.multiselect("Seleccionar Categorías", data["Categoría"].unique(), default=data["Categoría"].unique())
-    filtro_año = st.multiselect("Seleccionar Años", data["Año"].unique(), default=data["Año"].unique())
+    st.header("🔧 Configuración")
+    data_size = st.slider("Tamaño de los datos simulados:", min_value=100, max_value=1000, step=100, value=500)
+    filtro_categoria = st.multiselect("Seleccionar Categorías", ["Salarios", "Administración", "Gastos Médicos", "Limpieza", "Propaganda", "Capacitación"], default=["Salarios", "Administración"])
+    filtro_año = st.multiselect("Seleccionar Años", [2022, 2023, 2024], default=[2022, 2023])
 
-# Filtrar datos
+# Carga de datos y filtros
+data = load_data(data_size)
 data_filtrada = data[data["Categoría"].isin(filtro_categoria) & data["Año"].isin(filtro_año)]
 
-# --- Pestañas principales ---
+# Verificar si hay datos filtrados
 if data_filtrada.empty:
     st.warning("No hay datos disponibles para los filtros seleccionados.")
 else:
     tabs = st.tabs([
         "📊 Análisis General", 
         "🔎 Detección de Anomalías", 
-        "📦 Optimización de Inventarios",
+        "📦 Optimización de Inventarios", 
         "📚 Predicciones de Gasto", 
-        "🌐 Minería de Procesos"
+        "🌐 Minería de Procesos",
+        "🤖 Explicación de Modelos ML"
     ])
 
     # --- Pestaña 1: Análisis General ---
@@ -93,76 +83,76 @@ else:
         fig1 = px.bar(
             data_filtrada.groupby("Categoría")["Gasto ($)"].sum().reset_index(),
             x="Categoría", y="Gasto ($)", color="Categoría",
-            title="Gasto Total por Categoría"
+            title="Gasto Total por Categoría", color_discrete_sequence=px.colors.qualitative.Set3
         )
         st.plotly_chart(fig1, use_container_width=True)
 
         fig2 = px.line(
             data_filtrada.groupby("Mes")["Gasto ($)"].sum().reset_index(),
-            x="Mes", y="Gasto ($)", title="Gasto Mensual"
+            x="Mes", y="Gasto ($)", title="Tendencia Mensual del Gasto",
+            markers=True, line_shape="spline", color_discrete_sequence=["#636EFA"]
         )
         st.plotly_chart(fig2, use_container_width=True)
 
     # --- Pestaña 2: Detección de Anomalías ---
     with tabs[1]:
         st.header("🔎 Detección de Anomalías")
-        st.markdown("""
-        Utilizamos el modelo **Isolation Forest** para detectar anomalías en los gastos.  
-        Las anomalías pueden indicar posibles desviaciones o mal manejo de recursos.
-        """)
         iforest = IsolationForest(contamination=0.05, random_state=42)
         if not data_filtrada[["Gasto ($)"]].empty:
-            data_filtrada.loc[:, "Anomalía"] = iforest.fit_predict(data_filtrada[["Gasto ($)"]])
+            data_filtrada["Anomalía"] = iforest.fit_predict(data_filtrada[["Gasto ($)"]])
             anomalías = data_filtrada[data_filtrada["Anomalía"] == -1]
-            st.write("Transacciones sospechosas detectadas:", anomalías)
-            fig3 = px.scatter(
+            st.write(f"Se detectaron {len(anomalías)} anomalías:")
+            st.dataframe(anomalías)
+
+            fig_anomalías = px.scatter(
                 anomalías, x="Mes", y="Gasto ($)", color="Categoría",
-                title="Transacciones Sospechosas Detectadas"
+                title="Transacciones Sospechosas Detectadas",
+                size="Gasto ($)", color_discrete_sequence=px.colors.qualitative.Bold
             )
-            st.plotly_chart(fig3, use_container_width=True)
-        else:
-            st.warning("No hay datos suficientes para ejecutar la detección de anomalías.")
+            st.plotly_chart(fig_anomalías, use_container_width=True)
 
     # --- Pestaña 3: Optimización de Inventarios ---
     with tabs[2]:
         st.header("📦 Optimización de Inventarios")
-        st.markdown("""
-        Se utilizan técnicas de **clustering** para agrupar categorías de gasto similares.  
-        Esto permite identificar áreas donde se pueden reducir costos o mejorar la eficiencia.
-        """)
         kmeans = KMeans(n_clusters=3, random_state=42)
-        data_filtrada.loc[:, "Cluster"] = kmeans.fit_predict(data_filtrada[["Gasto ($)"]])
-        fig4 = px.scatter(
+        data_filtrada["Cluster"] = kmeans.fit_predict(data_filtrada[["Gasto ($)"]])
+        fig_kmeans = px.scatter(
             data_filtrada, x="Mes", y="Gasto ($)", color="Cluster",
-            title="Clustering de Categorías de Gasto"
+            title="Agrupamiento de Gastos por Inventario",
+            color_discrete_sequence=px.colors.qualitative.Pastel
         )
-        st.plotly_chart(fig4, use_container_width=True)
+        st.plotly_chart(fig_kmeans, use_container_width=True)
 
     # --- Pestaña 4: Predicciones de Gasto ---
     with tabs[3]:
         st.header("📚 Predicciones de Gasto")
-        st.markdown("""
-        Utilizamos modelos de regresión para predecir el gasto futuro y planificar mejor el presupuesto.
-        """)
         lr = LinearRegression()
         X = data_filtrada[["Mes"]]
         y = data_filtrada["Gasto ($)"]
         if not X.empty:
             lr.fit(X, y)
             data_filtrada["Predicción ($)"] = lr.predict(X)
-            fig5 = px.line(
+            fig_pred = px.line(
                 data_filtrada, x="Mes", y="Predicción ($)", color="Categoría",
-                title="Predicciones de Gasto"
+                title="Predicciones de Gasto Mensual",
+                markers=True, line_shape="spline", color_discrete_sequence=px.colors.qualitative.Vivid
             )
-            st.plotly_chart(fig5, use_container_width=True)
-        else:
-            st.warning("No hay datos suficientes para entrenar el modelo de regresión.")
+            st.plotly_chart(fig_pred, use_container_width=True)
 
     # --- Pestaña 5: Minería de Procesos ---
     with tabs[4]:
         st.header("🌐 Minería de Procesos")
+        st.image(
+            "https://miro.medium.com/max/1400/1*X47Jl9zwmDRQz-Z1knG0gg.png",
+            caption="Diagrama de Minería de Procesos", use_column_width=True
+        )
+
+    # --- Pestaña 6: Explicación de Modelos ML ---
+    with tabs[5]:
+        st.header("🤖 Modelos de Machine Learning: Explicación")
         st.markdown("""
-        Aplicamos minería de procesos para analizar el flujo de actividades relacionadas con el gasto y optimización de recursos.
+        **Modelos utilizados:**
+        1. **Isolation Forest:** Detecta anomalías mediante árboles de decisión que identifican puntos atípicos en los datos.
+        2. **KMeans:** Agrupa datos en clústeres según similitudes, ideal para análisis de inventarios.
+        3. **Regresión Lineal:** Predice tendencias futuras en gastos basado en datos históricos.
         """)
-        # Gráfico demostrativo de minería de procesos
-        st.image("https://miro.medium.com/max/1400/1*X47Jl9zwmDRQz-Z1knG0gg.png", caption="Diagrama de Minería de Procesos", use_column_width=True)
