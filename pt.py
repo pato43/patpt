@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 
 # Configuración inicial
 st.set_page_config(
-    page_title="Optimización Industrial Holman",
+    page_title="DEMO - Optimización Industrial Holman",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -30,8 +30,16 @@ st.markdown("""
 st.title("💡 Dashboard de Optimización Industrial - Grupo Holman")
 st.subheader("Automatización, Eficiencia y Análisis de Datos Operativos")
 st.markdown("""
-**Objetivo:** Mejorar la eficiencia operativa, reducir costos y detectar anomalías en los procesos de manufactura y logística.
-Esta herramienta está diseñada para maximizar el impacto de las decisiones empresariales y garantizar un uso óptimo de los recursos.
+**Objetivo:** Esta plataforma tiene como misión transformar los procesos industriales mediante la digitalización y optimización avanzada. 
+
+Con herramientas de Machine Learning, visualización interactiva y simulación de procesos, se busca:
+- Maximizar la eficiencia operativa.
+- Identificar anomalías en tiempo real.
+- Reducir costos innecesarios.
+- Optimizar el uso de inventarios y recursos.
+
+**¿Por qué este dashboard es relevante?**
+Nuestro enfoque se centra en la integración de análisis predictivo y soluciones prácticas para enfrentar desafíos clave del sector industrial.
 """)
 
 # Carga de datos simulados con opciones interactivas
@@ -70,12 +78,17 @@ else:
         "🔎 Detección de Anomalías", 
         "🛋 Optimización de Inventarios", 
         "📈 Predicciones de Costos",
-        "🌐 Simulación de Procesos"
+        "🌐 Simulación de Procesos",
+        "📚 Recomendaciones Personalizadas"
     ])
 
     # --- Pestaña 1: Análisis General ---
     with tabs[0]:
         st.header("📊 Análisis General de Operaciones")
+        st.markdown("""
+        **Enfoque:** Esta sección presenta un panorama general de los costos operativos para identificar patrones y áreas clave de oportunidad.
+        """)
+        
         fig1 = px.bar(
             data_filtrada.groupby("Categoría")["Costo ($)"].sum().reset_index(),
             x="Categoría", y="Costo ($)", color="Categoría",
@@ -93,6 +106,10 @@ else:
     # --- Pestaña 2: Detección de Anomalías ---
     with tabs[1]:
         st.header("🔎 Detección de Anomalías")
+        st.markdown("""
+        **Propósito:** Identificar transacciones inusuales que podrían indicar errores o áreas de mejora.
+        """)
+        
         iforest = IsolationForest(contamination=0.05, random_state=42)
         if not data_filtrada[["Costo ($)"]].empty:
             data_filtrada["Anomalía"] = iforest.fit_predict(data_filtrada[["Costo ($)"]])
@@ -110,6 +127,9 @@ else:
     # --- Pestaña 3: Optimización de Inventarios ---
     with tabs[2]:
         st.header("🛋 Optimización de Inventarios")
+        st.markdown("""
+        **Objetivo:** Agrupar costos asociados a inventarios para facilitar la toma de decisiones estratégicas.
+        """)
         kmeans = KMeans(n_clusters=3, random_state=42)
         data_filtrada["Cluster"] = kmeans.fit_predict(data_filtrada[["Costo ($)"]])
         fig_kmeans = px.scatter(
@@ -122,6 +142,9 @@ else:
     # --- Pestaña 4: Predicciones de Costos ---
     with tabs[3]:
         st.header("📈 Predicciones de Costos")
+        st.markdown("""
+        **Análisis Predictivo:** Proyectar costos futuros con base en patrones históricos para anticiparse a posibles excesos.
+        """)
         lr = LinearRegression()
         X = data_filtrada[["Mes"]]
         y = data_filtrada["Costo ($)"]
@@ -139,7 +162,7 @@ else:
     with tabs[4]:
         st.header("🌐 Simulación de Procesos")
         st.markdown("""
-        En esta sección, simulamos flujos de trabajo para identificar cuellos de botella y optimizar recursos en tiempo real.
+        **Descripción:** Modelar y analizar flujos de trabajo clave para identificar posibles cuellos de botella y mejorar la asignación de recursos.
         """)
         simulated_data = pd.DataFrame({
             "Tarea": ["Planificación", "Producción", "Distribución", "Entrega"],
@@ -156,3 +179,15 @@ else:
         st.markdown("**Optimización sugerida:**")
         st.write(simulated_data)
 
+    # --- Pestaña 6: Recomendaciones Personalizadas ---
+    with tabs[5]:
+        st.header("📚 Recomendaciones Personalizadas")
+        st.markdown("""
+        Basándonos en los datos analizados, sugerimos las siguientes acciones para maximizar la eficiencia:
+        - **Automatizar tareas recurrentes** en las áreas de Producción y Logística.
+        - **Implementar controles preventivos** en los puntos identificados como anómalos.
+        - **Monitorear y ajustar** inventarios según los patrones de demanda proyectados.
+        - **Evaluar opciones de inversión** en tecnología para reducir costos energéticos.
+
+        Estas recomendaciones están diseñadas para adaptarse dinámicamente a los resultados del análisis.
+        """)
