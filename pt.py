@@ -11,7 +11,7 @@ import io
 
 # Configuración inicial
 st.set_page_config(
-    page_title="Optimización Industrial Holman",
+    page_title=" DEMO Optimización Industrial Holman",
     layout="wide",
     initial_sidebar_state="expanded"
 )
