@@ -70,6 +70,7 @@ else:
         "🔎 Detección de Anomalías", 
         "🛋 Optimización de Inventarios", 
         "📈 Predicciones de Costos",
+        "🌐 Simulación de Procesos"
     ])
 
     # --- Pestaña 1: Análisis General ---
@@ -133,4 +134,25 @@ else:
                 markers=True, line_shape="spline", color_discrete_sequence=px.colors.qualitative.Vivid
             )
             st.plotly_chart(fig_pred, use_container_width=True)
+
+    # --- Pestaña 5: Simulación de Procesos ---
+    with tabs[4]:
+        st.header("🌐 Simulación de Procesos")
+        st.markdown("""
+        En esta sección, simulamos flujos de trabajo para identificar cuellos de botella y optimizar recursos en tiempo real.
+        """)
+        simulated_data = pd.DataFrame({
+            "Tarea": ["Planificación", "Producción", "Distribución", "Entrega"],
+            "Duración (horas)": np.random.randint(2, 8, 4),
+            "Recursos Utilizados": np.random.randint(50, 200, 4)
+        })
+        fig_simulation = px.bar(
+            simulated_data, x="Tarea", y="Duración (horas)",
+            title="Duración Estimada por Tarea",
+            color="Recursos Utilizados", color_continuous_scale="Blues"
+        )
+        st.plotly_chart(fig_simulation, use_container_width=True)
+
+        st.markdown("**Optimización sugerida:**")
+        st.write(simulated_data)
 
