@@ -170,7 +170,8 @@ else:
         y = data_filtrada["Costo ($)"]
 
     # --- Generación de Reporte PDF ---
-    def generar_reporte():
+    
+  def generar_reporte():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
