@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
+from fpdf import FPDF
+import io
 
 # Configuración inicial
 st.set_page_config(
@@ -66,7 +68,7 @@ with st.sidebar:
     filtro_año = st.multiselect("Seleccionar Años", [2022, 2023, 2024], default=[2022, 2023])
 
     # Calculadora de gastos
-    st.header("🧮 Calculadora de Gastos")
+    st.header("🪮 Calculadora de Gastos")
     ingreso_mensual = st.number_input("Ingreso mensual estimado ($):", min_value=0, value=50000)
     gasto_mensual = st.number_input("Gasto mensual estimado ($):", min_value=0, value=30000)
     ahorro = ingreso_mensual - gasto_mensual
@@ -92,11 +94,11 @@ else:
     tabs = st.tabs([
         "📊 Análisis General", 
         "🔎 Detección de Anomalías", 
-        "🛋 Optimización de Inventarios", 
+        "🛌 Optimización de Inventarios", 
         "📈 Predicciones de Costos",
         "🌐 Simulación de Procesos",
         "📚 Recomendaciones Personalizadas",
-        "🛠 Herramientas Prácticas"
+        "🛠️ Herramientas Prácticas"
     ])
 
     # --- Pestaña 1: Análisis General ---
@@ -143,7 +145,7 @@ else:
 
     # --- Pestaña 3: Optimización de Inventarios ---
     with tabs[2]:
-        st.header("🛋 Optimización de Inventarios")
+        st.header("🛌 Optimización de Inventarios")
         st.markdown("""
         **Objetivo:** Agrupar costos asociados a inventarios para facilitar la toma de decisiones estratégicas.
         """)
@@ -165,99 +167,37 @@ else:
         lr = LinearRegression()
         X = data_filtrada[["Mes"]]
         y = data_filtrada["Costo ($)"]
-        if not X.empty:
-            lr.fit(X, y)
-            data_filtrada["Predicción ($)"] = lr.predict(X)
-            fig_pred = px.line(
-                data_filtrada, x="Mes", y="Predicción ($)", color="Categoría",
-                title="Predicciones de Costos Mensuales",
-                markers=True, line_shape="spline", color_discrete_sequence=px.colors.qualitative.Vivid
-            )
-            st.plotly_chart(fig_pred, use_container_width=True)
 
-    # --- Pestaña 5: Simulación de Procesos ---
-    with tabs[4]:
-        st.header("🌐 Simulación de Procesos")
-        st.markdown("""
-        **Descripción:** Modelar y analizar flujos de trabajo clave para identificar posibles cuellos de botella y mejorar la asignación de recursos.
-        """)
-        simulated_data = pd.DataFrame({
-            "Tarea": ["Planificación", "Producción", "Distribución", "Entrega"],
-            "Duración (horas)": np.random.randint(2, 8, 4),
-            "Recursos Utilizados": np.random.randint(50, 200, 4)
-        })
-        fig_simulation = px.bar(
-            simulated_data, x="Tarea", y="Duración (horas)",
-            title="Duración Estimada por Tarea",
-            color="Recursos Utilizados", color_continuous_scale="Blues"
+    # --- Generación de Reporte PDF ---
+    def generar_reporte():
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Reporte General - Optimización Industrial", ln=True, align='C')
+        pdf.ln(10)
+
+        pdf.set_font("Arial", size=10)
+        pdf.multi_cell(0, 10, txt="Resumen de Operaciones:")
+        
+        resumen = data_filtrada.groupby("Categoría")["Costo ($)"].sum().reset_index()
+        for _, row in resumen.iterrows():
+            pdf.cell(0, 10, txt=f"{row['Categoría']}: ${row['Costo ($)']}", ln=True)
+        
+        pdf.ln(10)
+        pdf.cell(0, 10, txt="Datos Filtrados:", ln=True)
+
+        with io.BytesIO() as buffer:
+            resumen.to_csv(buffer, index=False)
+            buffer.seek(0)
+            pdf.output(buffer, "F")
+            buffer.seek(0)
+            return buffer.getvalue()
+
+    if st.button("Descargar Reporte PDF"):
+        pdf_content = generar_reporte()
+        st.download_button(
+            label="Descargar Reporte General",
+            data=pdf_content,
+            file_name="reporte_general.pdf",
+            mime="application/pdf"
         )
-        st.plotly_chart(fig_simulation, use_container_width=True)
-
-        st.markdown("**Optimización sugerida:**")
-        st.write(simulated_data)
-
-    # --- Pestaña 6: Recomendaciones Personalizadas ---
-    with tabs[5]:
-        st.header("📚 Recomendaciones Personalizadas")
-        st.markdown("""
-        Basándonos en los datos analizados, sugerimos las siguientes acciones para maximizar la eficiencia:
-        - **Automatizar tareas recurrentes** en las áreas de Producción y Logística.
-        - **Implementar controles preventivos** en los puntos identificados como anómalos.
-        - **Monitorear y revisar inventarios** para minimizar desperdicios y asegurar una asignación eficiente de recursos.
-        """)
-
-    # --- Pestaña 7: Herramientas Prácticas ---
-    with tabs[6]:
-        st.header("🛠 Herramientas Prácticas")
-        st.markdown("""
-        **Utilice estas herramientas adicionales para potenciar sus procesos:**
-        - **Calculadora de gastos:** ya disponible en la barra lateral.
-        - **Sistema de monitoreo:** active o desactive el seguimiento de recursos críticos en tiempo real.
-        - **Generador de reportes detallados:** compile un informe personalizado en formato PDF.
-        """)
-
-        # Botón para generar reporte
-        if st.button("📄 Generar Reporte Detallado"):
-            import pdfkit
-            from io import BytesIO
-
-            # Crear contenido del reporte
-            reporte_html = f"""
-            <html>
-            <head>
-                <style>
-                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                    h1, h2 {{ color: #205375; }}
-                    table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                    th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                    th {{ background-color: #205375; color: white; }}
-                </style>
-            </head>
-            <body>
-                <h1>Reporte Detallado - Optimización Industrial</h1>
-                <h2>Análisis General</h2>
-                <p>Categorías analizadas: {', '.join(filtro_categoria)}</p>
-                <p>Años seleccionados: {', '.join(map(str, filtro_año))}</p>
-                
-                <h2>Datos Filtrados</h2>
-                {data_filtrada.to_html(index=False, justify='left')}
-            </body>
-            </html>
-            """
-
-            # Configuración de PDFKit
-            pdf_config = pdfkit.configuration()
-
-            # Generar PDF en memoria
-            pdf_output = BytesIO()
-            pdfkit.from_string(reporte_html, pdf_output, configuration=pdf_config)
-            pdf_output.seek(0)
-
-            # Descargar PDF
-            st.download_button(
-                label="Descargar Reporte PDF",
-                data=pdf_output,
-                file_name="reporte_optimización_industrial.pdf",
-                mime="application/pdf"
-            )
-
