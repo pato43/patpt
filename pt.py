@@ -170,38 +170,5 @@ else:
         y = data_filtrada["Costo ($)"]
 
     # --- Generación de Reporte PDF ---
-    
-  def generar_reporte():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Reporte General - Optimización Industrial", ln=True, align='C')
-    pdf.ln(10)
-
-    pdf.set_font("Arial", size=10)
-    pdf.multi_cell(0, 10, txt="Resumen de Operaciones:")
-
-    # Agregar datos al PDF
-    resumen = data_filtrada.groupby("Categoría")["Costo ($)"].sum().reset_index()
-    for _, row in resumen.iterrows():
-        pdf.cell(0, 10, txt=f"{row['Categoría']}: ${row['Costo ($)']}", ln=True)
-    
-    pdf.ln(10)
-    pdf.cell(0, 10, txt="Datos Filtrados:", ln=True)
-
-    # Usar BytesIO para evitar errores al generar el PDF
-    buffer = io.BytesIO()
-    pdf.output(buffer)
-    buffer.seek(0)
-    return buffer.getvalue()
-
-if st.button("Descargar Reporte PDF"):
-    pdf_content = generar_reporte()
-    st.download_button(
-        label="Descargar Reporte General",
-        data=pdf_content,
-        file_name="reporte_general.pdf",
-        mime="application/pdf"
-    )
-
-
+    def generar_reporte():
+        pdf
