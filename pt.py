@@ -72,8 +72,9 @@ with st.sidebar:
     ingreso_mensual = st.number_input("Ingreso mensual estimado ($):", min_value=0, value=50000)
     gasto_mensual = st.number_input("Gasto mensual estimado ($):", min_value=0, value=30000)
     ahorro = ingreso_mensual - gasto_mensual
+    porcentaje_ahorro = (ahorro / ingreso_mensual * 100) if ingreso_mensual > 0 else 0
     if ahorro >= 0:
-        st.success(f"El ahorro mensual proyectado es: ${ahorro}")
+        st.success(f"El ahorro mensual proyectado es: ${ahorro} ({porcentaje_ahorro:.2f}%)")
     else:
         st.error(f"Estás en déficit mensual por: ${abs(ahorro)}")
 
@@ -187,9 +188,7 @@ else:
         pdf.cell(0, 10, txt="Datos Filtrados:", ln=True)
 
         with io.BytesIO() as buffer:
-            resumen.to_csv(buffer, index=False)
-            buffer.seek(0)
-            pdf.output(buffer, "F")
+            pdf.output(buffer)
             buffer.seek(0)
             return buffer.getvalue()
 
