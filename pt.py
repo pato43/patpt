@@ -169,6 +169,73 @@ else:
         X = data_filtrada[["Mes"]]
         y = data_filtrada["Costo ($)"]
 
+    # --- Pestaña 5: Simulación de Procesos ---
+    with tabs[4]:
+        st.header("🌐 Simulación de Procesos")
+        st.markdown("""
+        **Propósito:** Visualizar el impacto de cambios en variables clave sobre los costos totales.
+        """)
+        incremento_costo = st.slider("Incremento porcentual de costos:", 0, 100, step=10, value=20)
+        data_simulada = data_filtrada.copy()
+        data_simulada["Costo Simulado ($)"] = data_filtrada["Costo ($)"] * (1 + incremento_costo / 100)
+
+        fig_sim = px.bar(
+            data_simulada,
+            x="Categoría",
+            y=["Costo ($)", "Costo Simulado ($)"],
+            barmode="group",
+            title="Impacto de Incremento en Costos por Categoría",
+            color_discrete_sequence=px.colors.qualitative.Vivid
+        )
+        st.plotly_chart(fig_sim, use_container_width=True)
+
+    # --- Pestaña 6: Recomendaciones Personalizadas ---
+    with tabs[5]:
+        st.header("📚 Recomendaciones Personalizadas")
+        st.markdown("""
+        **Sugerencias para optimización:**
+        - Aumentar la eficiencia en categorías con costos altos.
+        - Priorizar mantenimiento preventivo para reducir gastos futuros.
+        - Implementar estrategias de ahorro energético.
+        """)
+
     # --- Generación de Reporte PDF ---
     def generar_reporte():
-        pdf
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+
+        # Título
+        pdf.set_font("Arial", style="B", size=16)
+        pdf.cell(0, 10, "Reporte de Optimización Industrial - Grupo Holman", ln=True, align="C")
+        pdf.ln(10)
+
+        # Resumen de datos
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 10, "Resumen de Datos Filtrados:", ln=True)
+        pdf.ln(5)
+        resumen = data_filtrada.groupby("Categoría")["Costo ($)"].sum().reset_index()
+        for index, row in resumen.iterrows():
+            pdf.cell(0, 10, f"{row['Categoría']}: ${row['Costo ($)']}", ln=True)
+
+        # Gráficos guardados como imágenes
+        buffer = io.BytesIO()
+
+        # Guardar una visualización como ejemplo
+        fig1.write_image(buffer, format="png")
+        buffer.seek(0)
+        pdf.image(buffer, x=10, y=60, w=190)
+
+        return pdf.output(dest='S').encode('latin1')
+
+    # Botón para descargar el reporte
+    st.sidebar.header("📄 Generar Reporte")
+    if st.sidebar.button("Descargar Reporte"):
+        pdf_bytes = generar_reporte()
+        st.sidebar.download_button(
+            label="Descargar PDF",
+            data=pdf_bytes,
+            file_name="reporte_optimizacion_industrial.pdf",
+            mime="application/pdf"
+        )
